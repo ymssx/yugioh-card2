@@ -4,14 +4,14 @@ export enum ComponentType {
 }
 
 export interface Style {
-  x: number,
-  y: number,
-  width: number,
-  height: number,
-  fontSrc?: string,
-  font?: string,
-  fontSize?: number,
-  color?: string,
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+  fontSrc?: string;
+  font?: string;
+  fontSize?: number;
+  color?: string;
 }
 
 export interface Resource {

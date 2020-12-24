@@ -54,7 +54,7 @@ export default class Card {
                 // 实际需要尺寸和模板尺寸可能不一致
                 // 自动缩放比例
                 if (['width', 'height', 'x', 'y', 'fontSize'].includes(key)) {
-                  return size / config.layout.style.width * style[key];
+                  return (size / config.layout.style.width) * style[key];
                 }
 
                 // 自动获取字体路径
@@ -85,9 +85,7 @@ export default class Card {
         }
         this.relyMap[relyKey].add(component);
       });
-      component.childrens.forEach(
-        (componentItem: Component) => walkComponent(componentItem)
-      );
+      component.childrens.forEach((componentItem: Component) => walkComponent(componentItem));
     };
     walkComponent(this.layout);
   }
