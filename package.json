@@ -4,7 +4,7 @@
   "description": "A tool to generate Yu-Gi-Oh OCG/TCG card images, can be used in browser environment or nodejs.",
   "main": "dist/index.js",
   "scripts": {
-    "lint": "tslint src/**/*.ts",
+    "lint": "eslint 'src/**/*.{js,ts}'",
     "prettier": "prettier --single-quote --print-width 120 --parser typescript --write \"./src/**/*.ts\"",
     "jest": "jest",
     "test": "npm run prettier && npm run lint && npm run & npm run jest",
@@ -34,15 +34,19 @@
   "devDependencies": {},
   "dependencies": {
     "@types/jest": "^26.0.19",
+    "@typescript-eslint/eslint-plugin": "^4.11.0",
+    "@typescript-eslint/parser": "^4.11.0",
+    "eslint": "^7.16.0",
+    "eslint-config-prettier": "^7.0.0",
+    "eslint-plugin-jest": "^24.1.3",
     "husky": "^4.3.5",
     "jest": "^26.6.3",
     "lint-staged": "^10.5.3",
     "prettier": "^2.2.1",
-    "ts-jest": "^26.4.4",
-    "tslint": "6.1.1",
-    "typescript": "^4.1.3",
     "sql-template-strings": "^2.2.2",
-    "ts-node": "^9.1.1"
+    "ts-jest": "^26.4.4",
+    "ts-node": "^9.1.1",
+    "typescript": "^4.1.3"
   },
   "husky": {
     "hooks": {
