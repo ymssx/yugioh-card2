@@ -1,5 +1,2 @@
-/build
-/coverage 
-/artifacts/
-node_modules
-.eslintcache
+/dist
+/node_modules
