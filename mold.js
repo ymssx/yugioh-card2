@@ -66,6 +66,7 @@ export default {
         lang: 'cn',
         mode: 'one-line',
         style: {
+          font: 'name',
           x: 100,
           y: 100,
           width: 700,
@@ -79,6 +80,8 @@ export default {
         rely: ['id'],
         opacity: false,
         style: {
+          x: 100,
+          y: 100,
           width: 500,
           height: 500,
         },

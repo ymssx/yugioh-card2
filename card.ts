@@ -5,7 +5,7 @@ import { Resource, Component } from './const';
 interface Config {
   name: string;
   data: object;
-  resource: object;
+  resource: Resource;
   layout: Component;
 }
 
@@ -47,13 +47,21 @@ export default class Card {
           if (key === 'childrens') {
             return origin.childrens.map((item: Component) => getComponetProxy(item));
           }
-          
+
           if (key === 'style') {
             return new Proxy(origin.style, {
               get(style, key: string) {
+                // 实际需要尺寸和模板尺寸可能不一致
+                // 自动缩放比例
                 if (['width', 'height', 'x', 'y', 'fontSize'].includes(key)) {
                   return size / config.layout.style.width * style[key];
                 }
+
+                // 自动获取字体路径
+                if (key === 'fontSrc') {
+                  return config.resource.fonts[style.font];
+                }
+
                 return style[key];
               },
             });

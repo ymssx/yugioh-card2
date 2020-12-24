@@ -8,6 +8,7 @@ export interface Style {
   y: number,
   width: number,
   height: number,
+  fontSrc?: string,
   font?: string,
   fontSize?: number,
   color?: string,
