@@ -1,8 +1,8 @@
 {
   "name": "yugioh-card2",
   "version": "1.0.0",
-  "description": "",
-  "main": "index.ts",
+  "description": "A tool to generate Yu-Gi-Oh OCG/TCG card images, can be used in browser environment or nodejs.",
+  "main": "dist/index.js",
   "scripts": {
     "lint": "tslint src/**/*.ts",
     "prettier": "prettier --single-quote --print-width 120 --parser typescript --write \"{src}/**/*.ts\"",
