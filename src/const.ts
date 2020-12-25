@@ -4,6 +4,7 @@ export enum ComponentType {
 }
 
 export interface Style {
+  [key: string]: any;
   x: number;
   y: number;
   width: number;
@@ -15,11 +16,12 @@ export interface Style {
 }
 
 export interface Resource {
-  fonts: object;
-  images: object;
+  fonts: { [key: string]: any };
+  images: { [key: string]: any };
 }
 
 export interface Component {
+  [key: string]: any;
   name?: string;
   type: ComponentType;
   style: Style;
@@ -27,4 +29,11 @@ export interface Component {
   rely?: string[];
   text?: string;
   childrens?: Component[];
+}
+
+export interface Config {
+  name: string;
+  data: { [key: string]: any };
+  resource: Resource;
+  layout: Component;
 }

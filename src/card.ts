@@ -1,35 +1,29 @@
 // entry
 
-import { Resource, Component } from './const';
+import { Resource, Component, Config } from './const';
+import render from './render';
 
-interface Config {
-  name: string;
-  data: object;
-  resource: Resource;
-  layout: Component;
-}
-
-interface otherConfig {
-  size?: number;
+export interface CardInterface {
+  canvas: HTMLCanvasElement;
+  config: Config;
+  size: number;
 }
 
 export default class Card {
   config: Config;
-  otherConfig: otherConfig;
   relyMap: Map<string, Set<Component>>;
-  data: object;
+  data: { [key: string]: any };
   resource: Resource;
   layout: Component;
   canvas: HTMLCanvasElement;
   currentComponent: Component | null;
 
-  constructor(canvas: HTMLCanvasElement, config: Config, otherConfig: otherConfig) {
+  constructor({ canvas, config, size }: CardInterface) {
     const that = this;
 
     this.canvas = canvas;
     this.config = config;
     this.resource = config.resource;
-    this.otherConfig = otherConfig;
 
     this.currentComponent = null;
     this.relyMap = new Map();
@@ -42,9 +36,11 @@ export default class Card {
           that.relyMap.get(key)?.add(that.currentComponent);
         }
         
-        // dataProcess 处理一下
-        // todo
-        return origin[key];
+        let finalData = origin;
+        origin.dataProcess?.map((processFunc: Function) => {
+          finalData = processFunc(finalData);
+        });
+        return finalData[key];
       },
       set(origin, key: string, value) {
         if (that.relyMap.has(key)) {
@@ -58,37 +54,53 @@ export default class Card {
 
     const getComponetProxy = (componnet: Component): Component => {
       return new Proxy(componnet, {
-        get(origin, key) {
+        get(origin, key: string) {
           that.currentComponent = origin;
 
-          if (key === 'childrens') {
-            return origin.childrens.map((item: Component) => getComponetProxy(item));
+          let targetValue = origin[key];
+          if (targetValue instanceof Function) {
+            targetValue = targetValue(that.data, that.resource);
+          }
+
+          if (key === 'childrens' && Array.isArray(targetValue)) {
+            return targetValue.map((item: Component) => getComponetProxy(item));
           }
 
           if (key === 'style') {
-            return new Proxy(origin.style, {
-              get(style, key: string) {
+            return new Proxy(targetValue, {
+              get(style, key: string, receiver) {
+                let targetStyle = style[key];
+                if (targetStyle instanceof Function) {
+                  targetStyle = targetStyle(that.data, that.resource);
+                }
+
                 // 实际需要尺寸和模板尺寸可能不一致
                 // 自动缩放比例
                 if (['width', 'height', 'x', 'y', 'fontSize'].includes(key)) {
-                  return (size / config.layout.style.width) * style[key];
+                  return (
+                    (size ? (size  / config.layout.style.width) : 1) * targetStyle
+                  );
                 }
 
                 // 自动获取字体路径
                 if (key === 'fontSrc') {
-                  return config.resource.fonts[style.font];
+                  return config.resource.fonts[receiver.font ?? 'default'];
                 }
 
-                return style[key];
+                return targetStyle;
               },
             });
           }
 
-          return origin[key];
+          return targetValue;
         },
       });
     };
     this.layout = getComponetProxy(config.layout);
+  }
+
+  render() {
+    render(this.canvas, this.layout);
   }
 
   update(key: string) {
