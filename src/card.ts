@@ -9,30 +9,45 @@ interface Config {
   layout: Component;
 }
 
+interface otherConfig {
+  size?: number;
+}
+
 export default class Card {
   config: Config;
-  watchSet: Set<string>;
-  relyMap: object;
+  otherConfig: otherConfig;
+  relyMap: Map<string, Set<Component>>;
   data: object;
   resource: Resource;
   layout: Component;
-  imageLoader: Function;
-  fontLoader: Function;
   canvas: HTMLCanvasElement;
+  currentComponent: Component | null;
 
-  constructor(data: object, config: Config, { size }) {
+  constructor(canvas: HTMLCanvasElement, config: Config, otherConfig: otherConfig) {
     const that = this;
 
+    this.canvas = canvas;
     this.config = config;
+    this.resource = config.resource;
+    this.otherConfig = otherConfig;
 
-    this.watchSet = new Set();
-    this.data = new Proxy(data, {
+    this.currentComponent = null;
+    this.relyMap = new Map();
+    this.data = new Proxy(this.config.data, {
       get(origin, key: string) {
-        that.watchSet.add(key);
+        if (that.currentComponent) {
+          if (!that.relyMap.has(key)) {
+            that.relyMap.set(key, new Set());
+          }
+          that.relyMap.get(key)?.add(that.currentComponent);
+        }
+        
+        // dataProcess 处理一下
+        // todo
         return origin[key];
       },
       set(origin, key: string, value) {
-        if (that.watchSet.has(key)) {
+        if (that.relyMap.has(key)) {
           that.update(key);
         }
 
@@ -41,9 +56,11 @@ export default class Card {
       },
     });
 
-    const getComponetProxy = (componnet: Component) => {
+    const getComponetProxy = (componnet: Component): Component => {
       return new Proxy(componnet, {
         get(origin, key) {
+          that.currentComponent = origin;
+
           if (key === 'childrens') {
             return origin.childrens.map((item: Component) => getComponetProxy(item));
           }
@@ -72,22 +89,6 @@ export default class Card {
       });
     };
     this.layout = getComponetProxy(config.layout);
-    this.ansysComponentRely();
-  }
-
-  ansysComponentRely() {
-    this.relyMap = {};
-    const walkComponent = (component: Component) => {
-      const rely = component.rely;
-      rely.forEach((relyKey: string) => {
-        if (!this.relyMap[relyKey]) {
-          this.relyMap[relyKey] = new Set();
-        }
-        this.relyMap[relyKey].add(component);
-      });
-      component.childrens.forEach((componentItem: Component) => walkComponent(componentItem));
-    };
-    walkComponent(this.layout);
   }
 
   update(key: string) {

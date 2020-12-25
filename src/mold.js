@@ -4,10 +4,10 @@ export default {
   name: '11th mold',
   // 需要用到的数据
   data: {
-    id: String,
-    name: String,
-    type: String,
-    linkArrows: Array,
+    id: '1000',
+    name: '青眼白龙',
+    type: [],
+    linkArrows: [1, 1, 1, 1, 1, 1, 1, 1],
   },
   // 数据加工函数，最终访问到的data是处理后的数据
   dataProcess: [
@@ -62,7 +62,6 @@ export default {
         name: '卡名',
         type: 'text',
         text: data => data.name,
-        rely: ['name'],
         lang: 'cn',
         mode: 'one-line',
         style: {
@@ -77,7 +76,6 @@ export default {
         type: 'image',
         direct: true,
         src: data => `xxx/${data.id}.jpg`,
-        rely: ['id'],
         opacity: false,
         style: {
           x: 100,
@@ -90,7 +88,6 @@ export default {
         name: '效果',
         type: 'text',
         text: data => data.desc,
-        rely: ['desc'],
         lang: 'cn',
         mode: 'multi-line',
         style: {
@@ -104,7 +101,6 @@ export default {
         name: '灵摆效果',
         type: 'text',
         text: data => data.pendulumDesc,
-        rely: ['pendulumDesc'],
         // 绘制条件
         if: data => data.type[3] === 'pendulum',
         lang: 'cn',
