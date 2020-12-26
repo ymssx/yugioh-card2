@@ -12,18 +12,20 @@ const render = async (canvas: HTMLCanvasElement, component: Component): Promise<
   for (let index = 0; index < (component.repeat ?? 1); index += 1) {
     component.repeatCount = index;
     const { style, type, src, text = '', childrens = [] } = component;
-    const { x, y, width, height, font, fontSize, color = 'black' } = style;
+    const { x, y, width, height, fontSrc, fontSize, color = 'black' } = style;
 
     switch (type) {
       case ComponentType.image: {
         const image = await imageLoader(src ?? '');
         c.drawImage(image, x, y, width, height);
+        break;
       }
       case ComponentType.text: {
-        // await fontLoader(fontSrc);
-        // c.font = `${font} ${fontSize}`;
+        const fontName = await fontLoader(fontSrc ?? '');
+        c.font = `${fontSize}px ${fontName}`;
         c.fillStyle = color;
         c.fillText(text, x, y, width);
+        break;
       }
       default:
         break;

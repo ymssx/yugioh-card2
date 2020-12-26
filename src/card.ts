@@ -85,6 +85,7 @@ export default class Card {
 
                 // 自动获取字体路径
                 if (key === 'fontSrc') {
+                  // console.log(config.resource.fonts, receiver, style, origin)
                   return config.resource.fonts[receiver.font ?? 'default'];
                 }
 
