@@ -4,6 +4,10 @@ import { Component, ComponentType } from './const';
 import { imageLoader, fontLoader } from './fileLoader';
 
 const render = async (canvas: HTMLCanvasElement, component: Component): Promise<any> => {
+  if (!component.if) {
+    return;
+  }
+
   const c = canvas.getContext('2d');
   if (!c) {
     return;

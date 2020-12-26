@@ -4,6 +4,25 @@ import { Resource, Component, Config } from './const';
 import isNodeEnv from './utils/env';
 import render from './render';
 
+const defaultComponentValue: {
+  [key: string]: any;
+} = {
+  if: true,
+  direct: false,
+  repeat: 1,
+};
+
+const defaultStyleValue: {
+  [key: string]: any;
+} = {
+  color: 'black',
+  fontSize: 12,
+  x: 0,
+  y: 0,
+  width: 100,
+  height: 100,
+};
+
 export interface CardInterface {
   canvas: HTMLCanvasElement;
   config: Config;
@@ -67,7 +86,10 @@ export default class Card {
           } else {
             targetValue = targetValueOrigin;
           }
-          // console.log(origin.name, key, targetValue)
+
+          if (defaultComponentValue.hasOwnProperty(key) && !origin.hasOwnProperty(key)) {
+            return defaultComponentValue[key];
+          }
 
           if (key === 'childrens' && Array.isArray(targetValue)) {
             return targetValue.map((item: Component) => getComponetProxy(item));
@@ -82,6 +104,10 @@ export default class Card {
                   targetStyle = targetStyleOrigin(that.data, that.resource, origin.repeatCount);
                 } else {
                   targetStyle = targetStyleOrigin;
+                }
+
+                if (defaultStyleValue.hasOwnProperty(key) && !style.hasOwnProperty(key)) {
+                  return defaultStyleValue[key];
                 }
 
                 // 实际需要尺寸和模板尺寸可能不一致

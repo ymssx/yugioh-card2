@@ -26,7 +26,6 @@ export interface Component {
   type: ComponentType;
   style: Style;
   src?: string;
-  rely?: string[];
   text?: string;
   childrens?: Component[];
 }
