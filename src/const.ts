@@ -28,6 +28,7 @@ export interface Component {
   src?: string;
   text?: string;
   childrens?: Component[];
+  inherit?: Component[];
 }
 
 export interface Config {

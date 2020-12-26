@@ -2,6 +2,7 @@
 
 import { Resource, Component, Config } from './const';
 import isNodeEnv from './utils/env';
+import formatComponentObject from './utils/formatComponent';
 import render from './render';
 
 const defaultComponentValue: {
@@ -21,6 +22,7 @@ const defaultStyleValue: {
   y: 0,
   width: 100,
   height: 100,
+  textAlign: 'left',
 };
 
 export interface CardInterface {
@@ -74,8 +76,8 @@ export default class Card {
       },
     });
 
-    const getComponetProxy = (componnet: Component): Component => {
-      return new Proxy(componnet, {
+    const getComponetProxy = (component: Component): Component => {
+      return new Proxy(component, {
         get(origin, key: string) {
           that.currentComponent = getComponetProxy(origin);
 
@@ -130,7 +132,9 @@ export default class Card {
         },
       });
     };
-    this.layout = getComponetProxy(config.layout);
+
+    const formatComponent = formatComponentObject(config.layout);
+    this.layout = getComponetProxy(Array.isArray(formatComponent) ? formatComponent[0] : formatComponent);
   }
 
   needFullRenderRequest: Boolean = false;

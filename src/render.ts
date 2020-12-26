@@ -16,7 +16,7 @@ const render = async (canvas: HTMLCanvasElement, component: Component): Promise<
   for (let index = 0; index < (component.repeat ?? 1); index += 1) {
     component.repeatCount = index;
     const { style, type, src, text = '', childrens = [] } = component;
-    const { x, y, width, height, fontSrc, fontSize, color = 'black' } = style;
+    const { x, y, width, height, fontSrc, fontSize, color = 'black', textAlign = 'left' } = style;
 
     switch (type) {
       case ComponentType.image: {
@@ -28,6 +28,7 @@ const render = async (canvas: HTMLCanvasElement, component: Component): Promise<
         const fontName = await fontLoader(fontSrc ?? '');
         c.font = `${fontSize}px ${fontName}`;
         c.fillStyle = color;
+        c.textAlign = textAlign;
         c.fillText(text, x, y, width);
         break;
       }
@@ -36,7 +37,7 @@ const render = async (canvas: HTMLCanvasElement, component: Component): Promise<
     }
 
     const renderList = [];
-    for (const componentItem of childrens) {
+    for (const componentItem of (component.childrens ?? [])) {
       renderList.push(render(canvas, componentItem));
     }
 

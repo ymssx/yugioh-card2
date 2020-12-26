@@ -3,12 +3,13 @@
 export default {
   name: 'yugioh 11th mold',
   data: {
-    id: '10000',
-    name: '青眼白龙',
-    attribute: 'light',
-    level: 8,
+    id: '581014',
+    name: '大薰风骑士 翠玉',
+    attribute: 'wind',
+    level: 4,
     type: ['monster', 'normal'],
-    attack: 100,
+    attack: 1800,
+    defend: 1700,
     // ...
   },
   // 最好是纯函数
@@ -28,6 +29,7 @@ export default {
       attributes: {
         light: './src/ygo/resource/attribute/cn/light.png',
         dark: './src/ygo/resource/attribute/cn/dark.png',
+        wind: './src/ygo/resource/attribute/cn/wind.png',
       },
       star: {
         level: './src/ygo/resource/star/level.png',
@@ -36,6 +38,7 @@ export default {
     },
     fonts: {
       name: './src/ygo/resource/font/cn.ttf',
+      number: './src/ygo/resource/font/number.ttf',
     },
   },
   layout: {
@@ -106,6 +109,52 @@ export default {
           width: 614,
           height: 616,
         },
+      },
+      // 语法糖
+      // 因为攻击防御有许多相同属性，可以将相同部分合并
+      {
+        type: 'text',
+        style: {
+          y: 1107,
+          width: 72,
+          font: 'number',
+          fontSize: 36,
+          textAlign: 'right',
+        },
+        inherit: [
+          {
+            name: '攻击力',
+            text: data => data.attack,
+            style: { x: 585 },
+          },
+          {
+            name: '防御力',
+            text: data => data.defend,
+            style: { x: 750 },
+          },
+        ],
+      },
+      {
+        type: 'text',
+        style: {
+          y: 1107,
+          width: 72,
+          font: 'number',
+          fontSize: 36,
+          textAlign: 'right',
+        },
+        inherit: [
+          {
+            name: 'ATK',
+            text: 'ATK/',
+            style: { x: 513 },
+          },
+          {
+            name: 'DEF',
+            text: 'DEF/',
+            style: { x: 678 },
+          },
+        ],
       },
     ]
   }
