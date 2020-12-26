@@ -60,10 +60,14 @@ export default class Card {
         get(origin, key: string) {
           that.currentComponent = getComponetProxy(origin);
 
-          let targetValue = origin[key];
-          if (targetValue instanceof Function) {
-            targetValue = targetValue(that.data, that.resource, origin.repeatCount);
+          const targetValueOrigin = origin[key];
+          let targetValue;
+          if (targetValueOrigin instanceof Function) {
+            targetValue = targetValueOrigin(that.data, that.resource, origin.repeatCount);
+          } else {
+            targetValue = targetValueOrigin;
           }
+          // console.log(origin.name, key, targetValue)
 
           if (key === 'childrens' && Array.isArray(targetValue)) {
             return targetValue.map((item: Component) => getComponetProxy(item));
@@ -72,9 +76,12 @@ export default class Card {
           if (key === 'style') {
             return new Proxy(targetValue, {
               get(style, key: string, receiver) {
-                let targetStyle = style[key];
-                if (targetStyle instanceof Function) {
-                  targetStyle = targetStyle(that.data, that.resource, origin.repeatCount);
+                const targetStyleOrigin = style[key];
+                let targetStyle;
+                if (targetStyleOrigin instanceof Function) {
+                  targetStyle = targetStyleOrigin(that.data, that.resource, origin.repeatCount);
+                } else {
+                  targetStyle = targetStyleOrigin;
                 }
 
                 // 实际需要尺寸和模板尺寸可能不一致
@@ -85,7 +92,6 @@ export default class Card {
 
                 // 自动获取字体路径
                 if (key === 'fontSrc') {
-                  // console.log(config.resource.fonts, receiver, style, origin)
                   return config.resource.fonts[receiver.font ?? 'default'];
                 }
 
@@ -101,40 +107,51 @@ export default class Card {
     this.layout = getComponetProxy(config.layout);
   }
 
-  localRenderSet = new Set<Component>();
-  needFullRender = false;
-  reRenderRequest: number | null = null;
+  needFullRenderRequest: Boolean = false;
+  fullRenderRequest: number | null = null;
+  localRenderRequestMap = new Map<Component, number>();
   update(key: string) {
-    // 已经计划了全量更新，忽略更新请求
-    if (this.needFullRender) {
+    // 当已计划全量更新时，不再受理更新请求
+    if (this.needFullRenderRequest) {
       return;
-    }
-
-    if (this.reRenderRequest) {
-      cancelAnimationFrame(this.reRenderRequest);
     }
 
     const updateSet = this.relyMap.get(key) ?? new Set();
     for (const component of updateSet) {
       if (!component.direct) {
-        this.needFullRender = true;
-        this.localRenderSet.clear();
-        this.reRenderRequest = requestAnimationFrame(() => this.render());
+        // 引发全量更新
+        this.needFullRenderRequest = true;
+        if (this.fullRenderRequest) {
+          cancelAnimationFrame(this.fullRenderRequest);
+        }
+        this.fullRenderRequest = requestAnimationFrame(async () => {
+          await this.render();
+          this.needFullRenderRequest = false;
+        });
+
+        // 所有局部更新请求localRenderRequestMap全部取消
+        for (const request of this.localRenderRequestMap.values()) {
+          cancelAnimationFrame(request);
+        }
+        this.localRenderRequestMap.clear();
+
         return;
       }
-      this.localRenderSet.add(component);
-      this.reRenderRequest = requestAnimationFrame(() => {
-        for (const component of this.localRenderSet) {
-          this.render(this.canvas, component);
-        }
+
+      const oldRenderRequest = this.localRenderRequestMap.get(component);
+      if (oldRenderRequest) {
+        cancelAnimationFrame(oldRenderRequest);
+      }
+      // 每个局部请求之间相互独立
+      const renderRequest = requestAnimationFrame(async () => {
+        await this.render(this.canvas, component);
+        this.localRenderRequestMap.delete(component);
       });
+      this.localRenderRequestMap.set(component, renderRequest);
     }
   }
 
-  render(canvas = this.canvas, component = this.layout) {
-    render(canvas, component);
-    this.localRenderSet.clear();
-    this.reRenderRequest = null;
-    this.needFullRender = false;
+  async render(canvas = this.canvas, component = this.layout) {
+    await render(canvas, component);
   }
 }
