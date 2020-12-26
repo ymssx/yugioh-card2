@@ -76,7 +76,6 @@ export default {
         type: 'image',
         direct: true,
         src: data => `xxx/${data.id}.jpg`,
-        opacity: false,
         style: {
           x: 100,
           y: 100,
@@ -85,11 +84,29 @@ export default {
         },
       },
       {
+        name: '等级',
+        type: 'image',
+        src: data => `xxx/${data.type[2] === 'xyz' ? 'rank' : 'star'}.png`,
+        // 重复次数
+        repeat: data => data.level,
+        style: {
+          // index: 重复索引
+          x: (data, _, index) => {
+            return data.type[2] === 'xyz' ?
+              (60 + index * 60) :
+              (600 - index * 60);
+          },
+          y: 200,
+          width: 50,
+          height: 50,
+        },
+      },
+      {
         name: '效果',
         type: 'text',
         text: data => data.desc,
+        maxLine: 6,
         lang: 'cn',
-        mode: 'multi-line',
         style: {
           x: 40,
           y: 500,
@@ -101,16 +118,28 @@ export default {
         name: '灵摆效果',
         type: 'text',
         text: data => data.pendulumDesc,
+        maxLine: 5,
         // 绘制条件
         if: data => data.type[3] === 'pendulum',
         lang: 'cn',
-        mode: 'multi-line',
         style: {
           x: 100,
           y: 400,
           width: 400,
           height: 100,
         },
+      },
+      {
+        name: '攻击栏 横线',
+        type: 'custom',
+        style: {
+          x: 400,
+          y: 50,
+          width: 600,
+        },
+        render: (data, resource, canvas, component) => {
+          // 自定义绘图逻辑
+        }
       },
     ],
   },

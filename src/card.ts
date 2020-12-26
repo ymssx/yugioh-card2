@@ -1,6 +1,7 @@
 // entry
 
 import { Resource, Component, Config } from './const';
+import isNodeEnv from './utils/env';
 import render from './render';
 
 export interface CardInterface {
@@ -35,7 +36,7 @@ export default class Card {
           }
           that.relyMap.get(key)?.add(that.currentComponent);
         }
-        
+
         let finalData = origin;
         origin.dataProcess?.map((processFunc: Function) => {
           finalData = processFunc(finalData);
@@ -44,7 +45,9 @@ export default class Card {
       },
       set(origin, key: string, value) {
         if (that.relyMap.has(key)) {
-          that.update(key);
+          if (!isNodeEnv()) {
+            that.update(key);
+          }
         }
 
         origin[key] = value;
@@ -55,11 +58,11 @@ export default class Card {
     const getComponetProxy = (componnet: Component): Component => {
       return new Proxy(componnet, {
         get(origin, key: string) {
-          that.currentComponent = origin;
+          that.currentComponent = getComponetProxy(origin);
 
           let targetValue = origin[key];
           if (targetValue instanceof Function) {
-            targetValue = targetValue(that.data, that.resource);
+            targetValue = targetValue(that.data, that.resource, origin.repeatCount);
           }
 
           if (key === 'childrens' && Array.isArray(targetValue)) {
@@ -71,15 +74,13 @@ export default class Card {
               get(style, key: string, receiver) {
                 let targetStyle = style[key];
                 if (targetStyle instanceof Function) {
-                  targetStyle = targetStyle(that.data, that.resource);
+                  targetStyle = targetStyle(that.data, that.resource, origin.repeatCount);
                 }
 
                 // 实际需要尺寸和模板尺寸可能不一致
                 // 自动缩放比例
-                if (['width', 'height', 'x', 'y', 'fontSize'].includes(key)) {
-                  return (
-                    (size ? (size  / config.layout.style.width) : 1) * targetStyle
-                  );
+                if (typeof targetStyle === 'number') {
+                  return (size ? size / config.layout.style.width : 1) * targetStyle;
                 }
 
                 // 自动获取字体路径
@@ -99,11 +100,40 @@ export default class Card {
     this.layout = getComponetProxy(config.layout);
   }
 
-  render() {
-    render(this.canvas, this.layout);
+  localRenderSet = new Set<Component>();
+  needFullRender = false;
+  reRenderRequest: number | null = null;
+  update(key: string) {
+    // 已经计划了全量更新，忽略更新请求
+    if (this.needFullRender) {
+      return;
+    }
+
+    if (this.reRenderRequest) {
+      cancelAnimationFrame(this.reRenderRequest);
+    }
+
+    const updateSet = this.relyMap.get(key) ?? new Set();
+    for (const component of updateSet) {
+      if (!component.direct) {
+        this.needFullRender = true;
+        this.localRenderSet.clear();
+        this.reRenderRequest = requestAnimationFrame(() => this.render());
+        return;
+      }
+      this.localRenderSet.add(component);
+      this.reRenderRequest = requestAnimationFrame(() => {
+        for (const component of this.localRenderSet) {
+          this.render(this.canvas, component);
+        }
+      });
+    }
   }
 
-  update(key: string) {
-    console.log(`${key} has changed! begin rerender.`);
+  render(canvas = this.canvas, component = this.layout) {
+    render(canvas, component);
+    this.localRenderSet.clear();
+    this.reRenderRequest = null;
+    this.needFullRender = false;
   }
 }
