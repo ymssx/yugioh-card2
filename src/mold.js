@@ -19,26 +19,27 @@ export default {
       frameName: data.type[0] === 'monster' ? `${data.type[0]}-${data.type[1]}` : data.type[0],
     }),
   ],
+  resourceBase: './src/ygo/resource',
   resource: {
     images: {
       frames: {
-        spell: './src/ygo/resource/frame/spell.jpg',
-        'monster-normal': './src/ygo/resource/frame/monster_tc.jpg',
-        'monster-xyz': './src/ygo/resource/frame/monster_cl.jpg',
+        spell: '@/frame/spell.jpg',
+        'monster-normal': '@/frame/monster_tc.jpg',
+        'monster-xyz': '@/frame/monster_cl.jpg',
       },
       attributes: {
-        light: './src/ygo/resource/attribute/cn/light.png',
-        dark: './src/ygo/resource/attribute/cn/dark.png',
-        wind: './src/ygo/resource/attribute/cn/wind.png',
+        light: '@/attribute/cn/light.png',
+        dark: '@/attribute/cn/dark.png',
+        wind: '@/attribute/cn/wind.png',
       },
       star: {
-        level: './src/ygo/resource/star/level.png',
-        rank: './src/ygo/resource/star/rank.png',
+        level: '@/star/level.png',
+        rank: '@/star/rank.png',
       },
     },
     fonts: {
-      name: './src/ygo/resource/font/cn.ttf',
-      number: './src/ygo/resource/font/number.ttf',
+      name: '@/font/cn.ttf',
+      number: '@/font/number.ttf',
     },
   },
   layout: {
@@ -110,7 +111,6 @@ export default {
           height: 616,
         },
       },
-      // 语法糖
       // 因为攻击防御有许多相同属性，可以将相同部分合并
       {
         type: 'text',
