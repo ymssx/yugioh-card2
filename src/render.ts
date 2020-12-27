@@ -28,7 +28,7 @@ const render = async (canvas: HTMLCanvasElement, component: Component): Promise<
 
   for (let index = 0; index < (component.repeat ?? 1); index += 1) {
     component.repeatCount = index;
-    const { name, style, type, src, text = '', childrens = [] } = component;
+    const { name, style, type, src, text = '' } = component;
     const { x, y, width, height, fontSrc, fontSize, color = 'black', textAlign = 'left' } = style;
 
     switch (type) {
@@ -44,6 +44,8 @@ const render = async (canvas: HTMLCanvasElement, component: Component): Promise<
             return;
           }
         } else {
+          // 尽可能使用同步加载（已加载的图片进行缓存）
+          // 异步会导致动画帧来到时canvas还未绘制结束（绘制任务还在异步队列中等待资源加载）
           image = imageRes;
         }
 

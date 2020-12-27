@@ -41,12 +41,12 @@ export const browserImageLoader = async (src: string) => {
 
 export const nodeImageLoader = async (src: string) => {};
 
-export const fontLoader = async (src: string) => {
-  return await browserFontLoader(src);
+export const fontLoader = (src: string) => {
+  return browserFontLoader(src);
 };
-export const imageLoader = async (src: string) => {
+export const imageLoader = (src: string) => {
   // if (isNodeEnv()) {
-  //   return await nodeImageLoader(src);
+  //   return nodeImageLoader(src);
   // }
-  return await browserImageLoader(src);
+  return browserImageLoader(src);
 };
