@@ -1,6 +1,5 @@
 // function for rendering a component
 
-import { set } from 'mobx';
 import { Component, ComponentType } from './const';
 import { imageLoader, fontLoader } from './fileLoader';
 
