@@ -22,7 +22,7 @@ export interface Resource {
 
 export interface Component {
   [key: string]: any;
-  name?: string;
+  name: string;
   type: ComponentType;
   style: Style;
   src?: string;
@@ -35,5 +35,6 @@ export interface Config {
   name: string;
   data: { [key: string]: any };
   resource: Resource;
+  resourceBase?: string;
   layout: Component;
 }

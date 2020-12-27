@@ -45,7 +45,6 @@ export default class Card {
 
     this.canvas = canvas;
     this.config = config;
-    this.resource = config.resource;
 
     this.currentComponent = null;
     this.relyMap = new Map();
@@ -75,6 +74,25 @@ export default class Card {
         return true;
       },
     });
+    
+    const resourceBase = config.resourceBase ?? '';
+    const formatResource = (resource: { [key: string]: any }) => {
+      const newResource: { [key: string]: any } = {};
+      for (const key in resource) {
+        const target = resource[key];
+        if (typeof target === 'string') {
+          newResource[key] = target.split('@').join(resourceBase);
+        } else {
+          newResource[key] = formatResource(target);
+        }
+      }
+      return newResource;
+    };
+    
+    this.resource = {
+      images: formatResource(config.resource.images),
+      fonts: formatResource(config.resource.fonts),
+    };
 
     const getComponetProxy = (component: Component): Component => {
       return new Proxy(component, {
@@ -120,7 +138,7 @@ export default class Card {
 
                 // 自动获取字体路径
                 if (key === 'fontSrc') {
-                  return config.resource.fonts[receiver.font ?? 'default'];
+                  return that.resource.fonts[receiver.font ?? 'default'];
                 }
 
                 return targetStyle;
@@ -137,48 +155,43 @@ export default class Card {
     this.layout = getComponetProxy(Array.isArray(formatComponent) ? formatComponent[0] : formatComponent);
   }
 
-  needFullRenderRequest: Boolean = false;
-  fullRenderRequest: number | null = null;
-  localRenderRequestMap = new Map<Component, number>();
+  needFullRender: Boolean = false;
+  renderRequest: number | null = null;
+  localRenderSet = new Set<Component>();
   update(key: string) {
     // 当已计划全量更新时，不再受理更新请求
-    if (this.needFullRenderRequest) {
+    if (this.needFullRender) {
       return;
+    }
+
+    if (this.renderRequest) {
+      cancelAnimationFrame(this.renderRequest);
     }
 
     const updateSet = this.relyMap.get(key) ?? new Set();
     for (const component of updateSet) {
       if (!component.direct) {
         // 引发全量更新
-        this.needFullRenderRequest = true;
-        if (this.fullRenderRequest) {
-          cancelAnimationFrame(this.fullRenderRequest);
-        }
-        this.fullRenderRequest = requestAnimationFrame(async () => {
-          await this.render();
-          this.needFullRenderRequest = false;
+        this.needFullRender = true;
+        this.renderRequest = requestAnimationFrame(async () => {
+          this.render();
+          this.localRenderSet.clear();
+          this.renderRequest = null;
+          this.needFullRender = false;
         });
-
-        // 所有局部更新请求localRenderRequestMap全部取消
-        for (const request of this.localRenderRequestMap.values()) {
-          cancelAnimationFrame(request);
-        }
-        this.localRenderRequestMap.clear();
-
         return;
       }
 
-      const oldRenderRequest = this.localRenderRequestMap.get(component);
-      if (oldRenderRequest) {
-        cancelAnimationFrame(oldRenderRequest);
-      }
-      // 每个局部请求之间相互独立
-      const renderRequest = requestAnimationFrame(async () => {
-        await this.render(this.canvas, component);
-        this.localRenderRequestMap.delete(component);
-      });
-      this.localRenderRequestMap.set(component, renderRequest);
+      this.localRenderSet.add(component);
     }
+    this.renderRequest = requestAnimationFrame(() => {
+      for (const componentItem of this.localRenderSet) {
+        this.render(this.canvas, componentItem);
+      }
+      this.localRenderSet.clear();
+      this.renderRequest = null;
+      this.needFullRender = false;
+    });
   }
 
   async render(canvas = this.canvas, component = this.layout) {
