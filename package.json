@@ -6,8 +6,8 @@
   "scripts": {
     "lint": "eslint 'src/**/*.{js,ts}'",
     "prettier": "prettier --single-quote --print-width 120 --parser typescript --write \"./src/**/*.ts\"",
-    "jest": "jest",
-    "test": "npm run prettier && npm run lint && npm run & npm run jest",
+    "jest": "jest --findRelatedTests",
+    "test": "npm run prettier && npm run lint && npm run jest",
     "clean": "rm -rf ./dist",
     "prebuild": "npm run clean",
     "build": "tsc -p ./tsconfig.build.json",
@@ -56,6 +56,6 @@
     }
   },
   "lint-staged": {
-    "**/*": "npm run test"
+    "src/**/*.ts": ["npm run prettier", "npm run lint", "npm run jest"]
   }
 }
